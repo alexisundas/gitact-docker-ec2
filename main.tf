@@ -33,6 +33,15 @@ resource "aws_instance" "alexis_instance" {
   }
 }
 
+resource "aws_ecr_repository" "docker-image" {
+  name                 = "docker-image"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}
+
 output "ec2_host" {
   value = aws_instance.alexis_instance.public_dns
 }

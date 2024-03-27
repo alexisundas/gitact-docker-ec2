@@ -3,7 +3,7 @@ env:
   AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
   AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
   AWS_REGION: eu-central-1
-  ECR_REPOSITORY: deployment-test
+  ECR_REPOSITORY: docker-image
 on:
   push:
     branches:
