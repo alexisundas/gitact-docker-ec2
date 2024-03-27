@@ -23,7 +23,7 @@ resource "aws_security_group" "alexis_security_group" {
 
 }
 
-resource "aws_instance" "aleixs_instance" {
+resource "aws_instance" "alexis_instance" {
   ami           = "ami-0c55b159cbfafe1f0"  # Replace this with your desired Linux AMI ID
   instance_type = "t2.micro"
   subnet_id     = aws_subnet.alexis_subnet.id
