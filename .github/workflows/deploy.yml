@@ -37,7 +37,7 @@ jobs:
         run: echo "::set-output name=ec2_ssh_key::$(terraform output ec2_ssh_key)"
   docker:
     name: Build and Push Docker Image to AWS ECR
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: terraform
     steps:
       - name: Checkout Repository
