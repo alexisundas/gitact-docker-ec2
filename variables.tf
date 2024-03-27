@@ -1,3 +1,7 @@
-variable "public_ssh_key" {
-  description = "Public SSH key for the EC2 instance access"
+variable "aws_access_key" {
+  description = "AWS Access Key ID"
+}
+
+variable "aws_secret_key" {
+  description = "AWS Secret Key"
 }

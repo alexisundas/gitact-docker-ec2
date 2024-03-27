@@ -1,5 +1,7 @@
 provider "aws" {
   region = "eu-central-1"
+  access_key = var.aws_access_key
+  secret_key = var.aws_secret_key
 }
 
 resource "aws_vpc" "alexis_vpc" {
@@ -26,8 +28,8 @@ resource "aws_security_group" "alexis_security_group" {
 resource "aws_instance" "aleixs_instance" {
   ami           = "ami-0c55b159cbfafe1f0"  # Replace this with your desired Linux AMI ID
   instance_type = "t2.micro"
-  subnet_id     = aws_subnet.example_subnet.id
-  security_groups = [aws_security_group.example_security_group.name]
+  subnet_id     = aws_subnet.alexis_subnet.id
+  security_groups = [aws_security_group.alexis_security_group.name]
 
   tags = {
     Name = "alexis-instance-test"
@@ -40,9 +42,4 @@ output "ec2_host" {
 
 output "ec2_username" {
   value = "ec2-user"  # Default username for most Linux AMIs
-}
-
-resource "aws_key_pair" "alexis_test_key" {
-  key_name   = "alexis_key"
-  public_key = var.public_ssh_key 
 }
