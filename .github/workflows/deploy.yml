@@ -3,53 +3,13 @@ env:
   AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
   AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
   AWS_REGION: eu-central-1
-  ECR_REPOSITORY: docker-image
+  ECR_REPOSITORY: test-app-repo
 on:
   push:
     branches:
       - main
 
 jobs:
-
-  destroy:
-    runs-on: ubuntu-latest
-    name: Cleanup terrform on AWS
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: terraform destroy
-        uses: dflook/terraform-destroy-workspace@v1
-        with:
-          workspace: ${{ github.head_ref }}
-  terraform:
-    name: Provision EC2 Instance with Terraform
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.7.0
-      
-      - name: Destroy all Terraform Resources
-        run: terraform destroy
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Plan
-        run: terraform plan
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
-
-      - name: Save EC2 Hostname
-        run: echo "::set-output name=ec2_host::$(terraform output ec2_host)"
-
-      - name: Save EC2 Username
-        run: echo "::set-output name=ec2_username::$(terraform output ec2_username)"
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
@@ -74,9 +34,22 @@ jobs:
             ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
             IMAGE_TAG: ${{ github.sha }}
           run: |
-            # Build a docker container and
-            # push it to ECR so that it can
-            # be deployed to ECS.
             docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
             docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
             echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+    
+        - name: Fill in the new image ID in the Amazon ECS task definition
+          id: task-def
+          uses: aws-actions/amazon-ecs-render-task-definition@v1
+          with:
+            task-definition: task-definition.json
+            container-name: app-test-container
+            image: ${{ steps.build-image.outputs.image }}
+    
+        - name: Deploy Amazon ECS task definition
+          uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+          with:
+            task-definition: ${{ steps.task-def.outputs.task-definition }}
+            service: app-test-service
+            cluster: app-cluster
+            wait-for-service-stability: true
